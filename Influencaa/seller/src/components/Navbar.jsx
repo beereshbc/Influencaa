@@ -9,6 +9,7 @@ import {
   BarChart3,
   Users,
   ChevronDown,
+  ChevronUp,
   User,
   LogOut,
   Settings,
@@ -42,8 +43,8 @@ import {
 } from "lucide-react";
 
 const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,7 +56,7 @@ const Navbar = () => {
   const controls = useAnimation();
 
   // Check for influencer token
-  const [infToken, setInfToken] = useState(localStorage.getItem("infToken"));
+  const [infToken, setInfToken] = useState(true);
 
   // Mock influencer data
   const [influencer, setInfluencer] = useState(
@@ -116,116 +117,28 @@ const Navbar = () => {
   // Navigation links for Influencers
   const influencerNavLinks = [
     {
-      name: "Campaigns",
+      id: 1,
+      label: "Campaigns",
       path: "/influencer/campaigns",
       icon: <Megaphone size={18} />,
-      dropdown: [
-        {
-          name: "Available Campaigns",
-          path: "/influencer/campaigns",
-          icon: <Target size={16} />,
-          description: "Find new brand partnerships",
-          badge: "12",
-        },
-        {
-          name: "Create New campaign",
-          path: "/influencer/campaigns/new",
-          icon: <FileText size={16} />,
-          description: "Creat new campaign packege",
-          badge: "3",
-        },
-      ],
     },
     {
-      name: "Orders",
+      id: 2,
+      label: "Orders",
       path: "/influencer/orders",
       icon: <ShoppingCart size={18} />,
-      dropdown: [
-        {
-          name: "All Orders",
-          path: "/influencer/orders",
-          icon: <Package size={16} />,
-          description: "View all your orders",
-          badge: "8",
-        },
-        {
-          name: "Pending Requests",
-          path: "/influencer/orders/pending",
-          icon: <Clock size={16} />,
-          description: "Orders awaiting your response",
-          badge: "2",
-        },
-        {
-          name: "In Progress",
-          path: "/influencer/orders/active",
-          icon: <TrendingUp size={16} />,
-          description: "Orders you're working on",
-          badge: "3",
-        },
-        {
-          name: "Completed",
-          path: "/influencer/orders/completed",
-          icon: <CheckCircle2 size={16} />,
-          description: "Delivered orders",
-        },
-        {
-          name: "Cancelled",
-          path: "/influencer/orders/cancelled",
-          icon: <X size={16} />,
-          description: "Cancelled orders",
-        },
-      ],
     },
     {
-      name: "Earnings",
+      id: 3,
+      label: "Earnings",
       path: "/influencer/earnings",
       icon: <DollarSign size={18} />,
-      dropdown: [
-        {
-          name: "Earnings Overview",
-          path: "/influencer/earnings",
-          icon: <PieChart size={16} />,
-          description: "View your earnings dashboard",
-        },
-        {
-          name: "Pending Payouts",
-          path: "/influencer/earnings/pending",
-          icon: <Clock size={16} />,
-          description: "Amount waiting for clearance",
-          badge: "₹25,500",
-        },
-        {
-          name: "Payment History",
-          path: "/influencer/earnings/history",
-          icon: <Receipt size={16} />,
-          description: "Complete transaction history",
-        },
-        {
-          name: "Withdraw Funds",
-          path: "/influencer/earnings/withdraw",
-          icon: <CreditCard size={16} />,
-          description: "Transfer to your bank account",
-        },
-      ],
     },
     {
-      name: "Analytics",
+      id: 4,
+      label: "Analytics",
       path: "/influencer/analytics",
       icon: <BarChart size={18} />,
-      dropdown: [
-        {
-          name: "Performance Overview",
-          path: "/influencer/analytics",
-          icon: <Activity size={16} />,
-          description: "Your overall performance",
-        },
-        {
-          name: "Campaign Analytics",
-          path: "/influencer/analytics/campaigns",
-          icon: <Target size={16} />,
-          description: "Campaign-specific insights",
-        },
-      ],
     },
   ];
 
@@ -239,29 +152,23 @@ const Navbar = () => {
 
   // Close mobile menu when route changes
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+    setOpenDropdown(null);
+    setProfileOpen(false);
+    setNotificationsOpen(false);
   }, [location]);
 
   // Scroll animation
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 50);
+      setIsScrolled(scrollY > 20);
 
-      if (scrollY > 100) {
-        controls.start({
-          opacity: 1,
-          y: 0,
-          backdropFilter: "blur(20px)",
-        });
-      } else {
-        controls.start({
-          opacity: 1,
-          y: 0,
-          backdropFilter: "blur(10px)",
-        });
-      }
+      controls.start({
+        opacity: 1,
+        y: 0,
+        backdropFilter: scrollY > 50 ? "blur(20px)" : "blur(10px)",
+      });
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -276,7 +183,7 @@ const Navbar = () => {
       // Close navigation dropdowns
       Object.values(dropdownRefs.current).forEach((ref) => {
         if (ref && !ref.contains(event.target)) {
-          setActiveDropdown(null);
+          setOpenDropdown(null);
         }
       });
 
@@ -298,21 +205,38 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleDropdown = (linkName) => {
-    setActiveDropdown(activeDropdown === linkName ? null : linkName);
-  };
-
-  const handleLogoClick = () => {
-    navigate("/influencer/dashboard");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const toggleDropdown = (id) => {
+    setOpenDropdown(openDropdown === id ? null : id);
   };
 
   const handleDirectNavigation = (path) => {
     navigate(path);
-    setActiveDropdown(null);
-    setIsMobileMenuOpen(false);
+    setOpenDropdown(null);
+    setMobileMenuOpen(false);
     setProfileOpen(false);
     setNotificationsOpen(false);
+  };
+
+  const handleNotificationClick = (notification) => {
+    setNotificationsOpen(false);
+
+    // Navigate based on notification type
+    switch (notification.type) {
+      case "order":
+        handleDirectNavigation("/influencer/orders");
+        break;
+      case "message":
+        handleDirectNavigation("/influencer/messages");
+        break;
+      case "payment":
+        handleDirectNavigation("/influencer/earnings");
+        break;
+      case "review":
+        handleDirectNavigation("/influencer/reviews");
+        break;
+      default:
+        handleDirectNavigation("/influencer/notifications");
+    }
   };
 
   const handleLogin = () => {
@@ -402,11 +326,9 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto w-full">
         <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
           {/* Logo */}
-          <motion.div
+          <div
+            onClick={() => navigate("/")}
             className="flex items-center gap-3 cursor-pointer group"
-            onClick={handleLogoClick}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
             <div className="relative">
               <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
@@ -426,144 +348,97 @@ const Navbar = () => {
                 Creator Platform
               </span>
             </div>
-          </motion.div>
+          </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-1">
-            {influencerNavLinks.map((link) => (
+          <div className="hidden lg:flex items-center gap-6">
+            {influencerNavLinks.map(({ id, label, path, icon, links }) => (
               <div
-                key={link.name}
-                className="relative"
-                ref={(el) => (dropdownRefs.current[link.name] = el)}
+                key={id}
+                className="group relative"
+                ref={(el) => (dropdownRefs.current[id] = el)}
               >
-                {link.dropdown ? (
-                  <>
-                    <button
-                      onClick={() => toggleDropdown(link.name)}
-                      onMouseEnter={() => setActiveDropdown(link.name)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg font-outfit font-semibold transition-all duration-300 group text-sm ${
-                        location.pathname === link.path ||
-                        (link.dropdown &&
-                          link.dropdown.some(
-                            (item) => location.pathname === item.path
-                          ))
-                          ? "text-orange-600 bg-orange-50"
-                          : "text-gray-700 hover:text-orange-600 hover:bg-orange-50/50"
-                      }`}
-                    >
-                      {link.icon}
-                      <span>{link.name}</span>
-                      {link.badge && (
-                        <span className="px-1.5 py-0.5 bg-green-500 text-white text-xs rounded-full">
-                          {link.badge}
-                        </span>
-                      )}
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-300 ${
-                          activeDropdown === link.name ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
+                <div className="flex items-center gap-1 cursor-pointer">
+                  <div
+                    onClick={() => handleDirectNavigation(path)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg font-outfit font-semibold transition-all duration-300 group text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50/50"
+                  >
+                    {icon}
+                    <span>{label}</span>
+                  </div>
+                  {links && (
+                    <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300 text-gray-600" />
+                  )}
+                </div>
 
-                    {/* Dropdown Menu */}
-                    <motion.div
-                      className={`absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-orange-100 overflow-hidden z-50 ${
-                        activeDropdown === link.name
-                          ? "opacity-100 visible translate-y-0"
-                          : "opacity-0 invisible -translate-y-2"
-                      }`}
-                      initial={false}
-                      animate={{
-                        opacity: activeDropdown === link.name ? 1 : 0,
-                        y: activeDropdown === link.name ? 0 : -10,
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="p-2">
-                        <div className="space-y-1">
-                          {link.dropdown.map((item) => (
-                            <button
-                              key={item.name}
-                              onClick={() => handleDirectNavigation(item.path)}
-                              className={`flex items-center justify-between w-full text-left p-3 rounded-lg transition-all duration-200 group text-sm ${
-                                location.pathname === item.path
-                                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md"
-                                  : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                {/* Desktop Dropdown Menu */}
+                {links && (
+                  <div className="absolute left-0 mt-2 hidden group-hover:block transition-all duration-300 ease-in-out bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-orange-100 py-2 px-1 z-20 w-80">
+                    {links.map(
+                      ({ to, label, icon, description, badge }, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleDirectNavigation(to)}
+                          className={`flex items-center justify-between w-full text-left p-3 rounded-lg transition-all duration-200 group text-sm ${
+                            location.pathname === to
+                              ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md"
+                              : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                location.pathname === to
+                                  ? "bg-white/20"
+                                  : "bg-orange-100"
                               }`}
                             >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                                  {item.icon}
-                                </div>
-                                <div className="text-left">
-                                  <div className="font-outfit font-semibold flex items-center gap-2">
-                                    {item.name}
-                                    {item.badge && (
-                                      <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs rounded-full">
-                                        {item.badge}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="text-gray-500 text-xs">
-                                    {item.description}
-                                  </div>
-                                </div>
+                              {icon}
+                            </div>
+                            <div className="text-left">
+                              <div className="font-outfit font-semibold flex items-center gap-2">
+                                {label}
+                                {badge && (
+                                  <span
+                                    className={`px-1.5 py-0.5 text-xs rounded-full ${
+                                      location.pathname === to
+                                        ? "bg-white/30 text-white"
+                                        : "bg-orange-500 text-white"
+                                    }`}
+                                  >
+                                    {badge}
+                                  </span>
+                                )}
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  </>
-                ) : (
-                  <NavLink
-                    to={link.path}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 px-3 py-2 rounded-lg font-outfit font-semibold transition-all duration-300 group text-sm ${
-                        isActive
-                          ? "text-orange-600 bg-orange-50"
-                          : "text-gray-700 hover:text-orange-600 hover:bg-orange-50/50"
-                      }`
-                    }
-                  >
-                    {link.icon}
-                    <span>{link.name}</span>
-                    {link.badge && (
-                      <span className="px-1.5 py-0.5 bg-green-500 text-white text-xs rounded-full">
-                        {link.badge}
-                      </span>
+                              <div
+                                className={`text-xs ${
+                                  location.pathname === to
+                                    ? "text-white/80"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {description}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      )
                     )}
-                  </NavLink>
+                  </div>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Right Side - Actions & Profile */}
-          <div className="flex items-center gap-2">
+          {/* Right Side Actions */}
+          <div className="flex items-center gap-3">
             {influencer ? (
               <>
-                {/* Search Bar */}
-                <div className="hidden md:block relative">
-                  <Search
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search campaigns..."
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-outfit text-sm w-64"
-                  />
-                </div>
-
                 {/* Notifications */}
                 <div className="relative" ref={notificationsRef}>
-                  <motion.button
+                  <button
                     onClick={() => setNotificationsOpen(!notificationsOpen)}
                     className="p-2 text-gray-600 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors duration-200 relative"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                   >
                     <Bell size={20} />
                     {unreadNotifications > 0 && (
@@ -571,16 +446,11 @@ const Navbar = () => {
                         {unreadNotifications}
                       </span>
                     )}
-                  </motion.button>
+                  </button>
 
                   {/* Notifications Dropdown */}
                   {notificationsOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute top-full right-0 mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-orange-100 overflow-hidden z-50"
-                    >
+                    <div className="absolute top-full right-0 mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-orange-100 overflow-hidden z-50">
                       <div className="p-4 border-b border-orange-100">
                         <div className="flex items-center justify-between">
                           <h3 className="font-brasika font-bold text-gray-900">
@@ -593,9 +463,12 @@ const Navbar = () => {
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.map((notification) => (
-                          <div
+                          <button
                             key={notification.id}
-                            className={`p-3 border-b border-gray-100 hover:bg-orange-50 cursor-pointer transition-colors ${
+                            onClick={() =>
+                              handleNotificationClick(notification)
+                            }
+                            className={`w-full text-left p-3 border-b border-gray-100 hover:bg-orange-50 cursor-pointer transition-colors ${
                               !notification.read ? "bg-blue-50" : ""
                             }`}
                           >
@@ -622,23 +495,27 @@ const Navbar = () => {
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
                       <div className="p-2 border-t border-orange-100">
-                        <button className="w-full text-center text-orange-600 hover:text-orange-700 font-outfit font-semibold text-sm py-2">
+                        <button
+                          className="w-full text-center text-orange-600 hover:text-orange-700 font-outfit font-semibold text-sm py-2"
+                          onClick={() =>
+                            handleDirectNavigation("/influencer/notifications")
+                          }
+                        >
                           View All Notifications
                         </button>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
 
                 {/* Messages */}
-                <motion.button
+                <button
+                  onClick={() => handleDirectNavigation("/influencer/messages")}
                   className="p-2 text-gray-600 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors duration-200 relative"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   <MessageCircle size={20} />
                   {quickStats.unreadMessages > 0 && (
@@ -646,16 +523,13 @@ const Navbar = () => {
                       {quickStats.unreadMessages}
                     </span>
                   )}
-                </motion.button>
+                </button>
 
                 {/* Profile */}
                 <div className="relative" ref={profileRef}>
-                  <motion.button
-                    onMouseEnter={() => setProfileOpen(true)}
-                    onMouseLeave={() => setProfileOpen(false)}
+                  <button
+                    onClick={() => setProfileOpen(!profileOpen)}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg font-outfit font-semibold transition-all duration-300 hover:bg-orange-50 text-gray-700"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                   >
                     <div className="relative">
                       <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
@@ -677,19 +551,17 @@ const Navbar = () => {
                         {influencer.rating}
                       </div>
                     </div>
-                    <ChevronDown size={14} />
-                  </motion.button>
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform duration-300 ${
+                        profileOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
 
                   {/* Profile Dropdown */}
                   {profileOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                      onMouseEnter={() => setProfileOpen(true)}
-                      onMouseLeave={() => setProfileOpen(false)}
-                      className="absolute top-full right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-orange-100 overflow-hidden z-50"
-                    >
+                    <div className="absolute top-full right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-orange-100 overflow-hidden z-50">
                       {/* User Info Header */}
                       <div className="p-4 bg-gradient-to-r from-orange-500 to-red-500 text-white">
                         <div className="flex items-center gap-3">
@@ -738,151 +610,95 @@ const Navbar = () => {
 
                       {/* Profile Links */}
                       <div className="p-2 space-y-1">
-                        <button className="flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 hover:bg-orange-50 text-gray-700 font-outfit font-semibold text-sm">
-                          <User size={16} />
-                          <span>Profile & Portfolio</span>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 hover:bg-red-50 text-red-600 font-outfit font-semibold text-sm"
+                        >
+                          <LogOut size={16} />
+                          <span>Sign Out</span>
                         </button>
-
-                        <div className="border-t border-orange-100 pt-2 mt-2">
-                          <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 hover:bg-red-50 text-red-600 font-outfit font-semibold text-sm"
-                          >
-                            <LogOut size={16} />
-                            <span>Sign Out</span>
-                          </button>
-                        </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
               </>
             ) : (
               // Not logged in - show login button
-              <motion.button
+              <button
                 className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white font-outfit font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm"
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.98 }}
                 onClick={handleLogin}
               >
                 Join as Creator
-              </motion.button>
+              </button>
             )}
 
             {/* Mobile Menu Button */}
             <div className="lg:hidden flex items-center">
-              <motion.button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 text-gray-700 rounded-lg hover:bg-orange-50 transition-colors duration-200"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
-                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </motion.button>
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
             </div>
           </div>
         </div>
 
         {/* Mobile Menu */}
-        <motion.div
-          className={`lg:hidden bg-white/95 backdrop-blur-xl border-t border-orange-100 overflow-hidden ${
-            isMobileMenuOpen ? "block" : "hidden"
-          }`}
-          initial={false}
-          animate={{
-            height: isMobileMenuOpen ? "auto" : 0,
-            opacity: isMobileMenuOpen ? 1 : 0,
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="p-4 space-y-2">
-            {influencerNavLinks.map((link) => (
-              <div key={link.name} className="space-y-1">
-                {link.dropdown ? (
-                  <>
-                    <button
-                      onClick={() => toggleDropdown(link.name)}
-                      className={`flex items-center justify-between w-full px-3 py-3 rounded-lg font-outfit font-semibold transition-all duration-200 text-sm ${
-                        location.pathname === link.path ||
-                        (link.dropdown &&
-                          link.dropdown.some(
-                            (item) => location.pathname === item.path
-                          ))
-                          ? "bg-gradient-to-r from-orange-500 to-red-500 text-white"
-                          : "text-gray-700 hover:bg-orange-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {link.icon}
-                        <span>{link.name}</span>
-                        {link.badge && (
-                          <span className="px-1.5 py-0.5 bg-green-500 text-white text-xs rounded-full">
-                            {link.badge}
+        {mobileMenuOpen && (
+          <div className="lg:hidden px-4 pb-4 pt-2 bg-white/95 backdrop-blur-xl border-t border-orange-100 space-y-4 rounded-b-xl">
+            {influencerNavLinks.map(({ id, label, path, icon, links }) => (
+              <div key={id}>
+                <button
+                  onClick={() => toggleDropdown(id)}
+                  className="w-full flex justify-between items-center py-2 text-lg font-outfit font-semibold text-gray-700"
+                >
+                  <div className="flex items-center gap-2">
+                    {icon}
+                    <span>{label}</span>
+                  </div>
+                  {links &&
+                    (openDropdown === id ? <ChevronUp /> : <ChevronDown />)}
+                </button>
+                {openDropdown === id && links && (
+                  <div className="pl-6 mt-1 space-y-1">
+                    {links.map(({ to, label, badge }, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleDirectNavigation(to)}
+                        className="block w-full text-left py-2 text-sm text-gray-600 hover:text-orange-600 flex items-center justify-between"
+                      >
+                        <span>{label}</span>
+                        {badge && (
+                          <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs rounded-full">
+                            {badge}
                           </span>
                         )}
-                      </div>
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-300 ${
-                          activeDropdown === link.name ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {/* Mobile Dropdown */}
-                    {activeDropdown === link.name && (
-                      <motion.div
-                        className="ml-4 space-y-1 bg-orange-50/50 rounded-lg p-2"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {link.dropdown.map((item) => (
-                          <button
-                            key={item.name}
-                            onClick={() => handleDirectNavigation(item.path)}
-                            className={`flex items-center justify-between w-full text-left px-3 py-2 rounded-lg transition-all duration-200 text-sm ${
-                              location.pathname === item.path
-                                ? "bg-orange-500 text-white"
-                                : "text-gray-700 hover:bg-orange-100"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              {item.icon}
-                              <span>{item.name}</span>
-                            </div>
-                            {item.badge && (
-                              <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs rounded-full">
-                                {item.badge}
-                              </span>
-                            )}
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </>
-                ) : (
-                  <button
-                    onClick={() => handleDirectNavigation(link.path)}
-                    className={`flex items-center gap-2 w-full px-3 py-3 rounded-lg font-outfit font-semibold transition-all duration-200 text-sm ${
-                      location.pathname === link.path
-                        ? "bg-gradient-to-r from-orange-500 to-red-500 text-white"
-                        : "text-gray-700 hover:bg-orange-50"
-                    }`}
-                  >
-                    {link.icon}
-                    <span>{link.name}</span>
-                    {link.badge && (
-                      <span className="px-1.5 py-0.5 bg-green-500 text-white text-xs rounded-full">
-                        {link.badge}
-                      </span>
-                    )}
-                  </button>
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             ))}
+
+            {/* Mobile Search */}
+            {influencer && (
+              <div className="pt-4 border-t border-orange-100">
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search campaigns..."
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-outfit text-sm w-full"
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        </motion.div>
+        )}
       </div>
     </motion.nav>
   );
