@@ -7,18 +7,29 @@ import Campaigns from "./pages/Campaigns";
 import AllOrders from "./pages/AllOrders";
 import Earnings from "./pages/Earnings";
 import Analytics from "./pages/Analytics";
+import { Toaster } from "react-hot-toast";
+import { useAppContext } from "./context/AppContext";
+import Profile from "./pages/Profile";
 
 const App = () => {
+  const { influencerToken } = useAppContext();
   return (
     <div>
+      <Toaster />
       <Navbar />
       <Routes>
-        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
-        <Route path="/influencer/campaigns" element={<Campaigns />} />
-        <Route path="/influencer/orders" element={<AllOrders />} />
-        <Route path="/influencer/earnings" element={<Earnings />} />
-        <Route path="/influencer/analytics" element={<Analytics />} />
+        {influencerToken ? (
+          <>
+            <Route path="/" element={<Home />} />
+            <Route path="/influencer/campaigns" element={<Campaigns />} />
+            <Route path="/influencer/orders" element={<AllOrders />} />
+            <Route path="/influencer/earnings" element={<Earnings />} />
+            <Route path="/influencer/profile" element={<Profile />} />
+          </>
+        ) : (
+          <Route path="/login" element={<Login />} />
+        )}
       </Routes>
     </div>
   );

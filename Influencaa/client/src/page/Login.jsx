@@ -18,6 +18,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -62,12 +64,54 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle authentication logic here
-    console.log("Form submitted:", formData);
-    // After successful auth, navigate to dashboard
-    navigate("/dashboard");
+    try {
+      if (isLogin) {
+        try {
+          const { data } = await axios.post("/api/client/login", {
+            email: formData.email,
+            password: formData.password,
+          });
+
+          if (data.success) {
+            toast.success("Login successful!");
+            localStorage.setItem("clientToken", data.clientToken);
+            navigate("/");
+          } else {
+            toast.error(data.message || "Invalid credentials");
+          }
+        } catch (error) {
+          toast.error(error.response?.data?.message || error.message);
+        }
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          toast.error("Passwords do not match");
+          return;
+        }
+
+        try {
+          const { data } = await axios.post("/api/client/register", {
+            name: formData.fullName,
+            companyName: formData.companyName,
+            email: formData.email,
+            password: formData.password,
+          });
+
+          if (data.success) {
+            toast.success("Account created successfully!");
+            localStorage.setItem("clientToken", data.clientToken);
+            navigate("/");
+          } else {
+            toast.error(data.message || "Registration failed");
+          }
+        } catch (error) {
+          toast.error(error.response?.data?.message || error.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const containerVariants = {

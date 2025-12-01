@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        brasika: ["Brasika", "sans-serif"],
-        Playfair: ["Playfair Display", "sans-serif"],
+        Playfair: ["Brasika", "sans-serif"],
+        brasik: ["Playfair Display", "sans-serif"],
       },
     },
   },

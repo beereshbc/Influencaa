@@ -48,28 +48,30 @@ const Navbar = () => {
       : null
   );
 
-  const navLinks = [
-    {
-      name: "Home",
-      path: "/",
-      icon: <Home size={18} />,
-    },
-    {
-      name: "Explore",
-      path: "/explore",
-      icon: <Search size={18} />,
-    },
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: <BarChart3 size={18} />,
-    },
-    {
-      name: "About",
-      path: "/about",
-      icon: <Users size={18} />,
-    },
-  ];
+  const navLinks = clientToken
+    ? [
+        {
+          name: "Home",
+          path: "/",
+          icon: <Home size={18} />,
+        },
+        {
+          name: "Explore",
+          path: "/explore",
+          icon: <Search size={18} />,
+        },
+        {
+          name: "Dashboard",
+          path: "/dashboard",
+          icon: <BarChart3 size={18} />,
+        },
+        {
+          name: "About",
+          path: "/about",
+          icon: <Users size={18} />,
+        },
+      ]
+    : [];
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -128,6 +130,10 @@ const Navbar = () => {
     setActiveDropdown(activeDropdown === linkName ? null : linkName);
   };
 
+  const toggleProfile = () => {
+    setProfileOpen(!profileOpen);
+  };
+
   const handleLogoClick = () => {
     navigate("/");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -147,7 +153,6 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("clientToken");
     setClientToken(null);
-    setUser(null);
     setProfileOpen(false);
     navigate("/");
   };
@@ -229,7 +234,6 @@ const Navbar = () => {
                   <>
                     <button
                       onClick={() => toggleDropdown(link.name)}
-                      onMouseEnter={() => setActiveDropdown(link.name)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-outfit font-semibold transition-all duration-300 group text-sm ${
                         location.pathname === link.path
                           ? "text-orange-600 bg-orange-50"
@@ -305,11 +309,10 @@ const Navbar = () => {
             {" "}
             {/* Reduced gap */}
             {clientToken && user ? (
-              // User is logged in - show profile icon with hover card
+              // User is logged in - show profile icon with clickable dropdown
               <div className="relative" ref={profileRef}>
                 <motion.button
-                  onMouseEnter={() => setProfileOpen(true)}
-                  onMouseLeave={() => setProfileOpen(false)}
+                  onClick={toggleProfile}
                   className="flex items-center justify-center w-8 h-8 rounded-xl font-outfit font-semibold transition-all duration-300 hover:bg-orange-50 text-gray-700"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -320,14 +323,12 @@ const Navbar = () => {
                   </div>
                 </motion.button>
 
-                {/* Profile Hover Card */}
+                {/* Profile Dropdown */}
                 {profileOpen && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
-                    onMouseEnter={() => setProfileOpen(true)}
-                    onMouseLeave={() => setProfileOpen(false)}
                     className="absolute top-full right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-orange-100 overflow-hidden z-50"
                   >
                     {/* User Info Header */}
@@ -350,7 +351,7 @@ const Navbar = () => {
                       </div>
                     </div>
 
-                    {/* Profile Links */}
+                    {/* Profile Links - Fixed Sign Out Button */}
                     <div className="p-2">
                       <button
                         onClick={handleLogout}
